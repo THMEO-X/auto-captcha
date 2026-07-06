@@ -6,4 +6,4 @@ services:
     startCommand: npm start
     envVars:
       - key: CLICK_INTERVAL_MS
-        value: "30000"   # click mỗi 60 giây, chỉnh tùy ý
+        value: "1000"   # click mỗi 60 giây, chỉnh tùy ý
