@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: owobot-clicker
+    env: node
+    buildCommand: npm install && npx playwright install chromium --with-deps
+    startCommand: npm start
+    envVars:
+      - key: CLICK_INTERVAL_MS
+        value: "30000"   # click mỗi 60 giây, chỉnh tùy ý

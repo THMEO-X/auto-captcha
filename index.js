@@ -1,37 +1,36 @@
-const puppeteer = require("puppeteer");
+const express = require('express');
+const { clickNotYou } = require('./clicker');
 
-(async () => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ]
-  });
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  const page = await browser.newPage();
+// Render cần HTTP server để giữ instance sống
+app.get('/', (req, res) => {
+  res.send('OWOBot Clicker is running. POST /click to trigger.');
+});
 
-  await page.goto("https://owobot.com/captcha", {
-    waitUntil: "networkidle2"
-  });
+// Trigger thủ công qua HTTP
+app.post('/click', async (req, res) => {
+  console.log('[server] /click triggered');
+  const result = await clickNotYou();
+  res.json(result);
+});
 
-  // Tô viền xanh để dễ thấy
-  await page.$eval("#not-you", el => {
-    el.style.outline = "4px solid blue";
-  });
+// Auto-click theo interval (đặt số giây tùy ý)
+const INTERVAL_MS = parseInt(process.env.CLICK_INTERVAL_MS || '60000'); // mặc định 60s
 
-  // Đợi phần tử xuất hiện
-  await page.waitForSelector("#not-you");
+async function autoLoop() {
+  console.log(`[auto] Starting loop every ${INTERVAL_MS}ms`);
+  while (true) {
+    console.log('[auto] Running click...');
+    const result = await clickNotYou();
+    console.log('[auto] Result:', result);
+    await new Promise((r) => setTimeout(r, INTERVAL_MS));
+  }
+}
 
-  // Click
-  await page.click("#not-you");
-
-  // Đợi chuyển trang
-  await page.waitForNavigation({
-    waitUntil: "networkidle2"
-  });
-
-  console.log("Đã chuyển tới:", page.url());
-
-  await browser.close();
-})();
+app.listen(PORT, () => {
+  console.log(`[server] Listening on port ${PORT}`);
+  // Chạy auto loop song song
+  autoLoop().catch(console.error);
+});
