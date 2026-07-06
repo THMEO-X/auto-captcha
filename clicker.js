@@ -5,6 +5,7 @@ async function clickNotYou(url = 'https://owobot.com/captcha') {
 
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -16,7 +17,6 @@ async function clickNotYou(url = 'https://owobot.com/captcha') {
   });
 
   const page = await browser.newPage();
-
   await page.setUserAgent(
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
     'AppleWebKit/537.36 (KHTML, like Gecko) ' +
@@ -28,7 +28,6 @@ async function clickNotYou(url = 'https://owobot.com/captcha') {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await new Promise(r => setTimeout(r, 3000));
 
-    // Tìm và click "Not you?" bằng DOM evaluate
     const clicked = await page.evaluate(() => {
       const tags = document.querySelectorAll('a, button, span, p, div');
       for (const el of tags) {
@@ -38,7 +37,6 @@ async function clickNotYou(url = 'https://owobot.com/captcha') {
           return { found: true, tag: el.tagName, text: el.innerText };
         }
       }
-      // Partial match fallback
       for (const el of tags) {
         const text = (el.innerText || el.textContent || '').trim().toLowerCase();
         if (text.includes('not you')) {
@@ -55,11 +53,9 @@ async function clickNotYou(url = 'https://owobot.com/captcha') {
       result.message = `Clicked <${clicked.tag}> "${clicked.text}"`;
       console.log('[clicker] ✅', result.message);
     } else {
-      // Debug: in ra page text để xem có gì
       const preview = await page.evaluate(() => document.body.innerText.slice(0, 800));
-      result.message = 'Not found. Page preview: ' + preview;
-      console.log('[clicker] ❌ Not found');
-      console.log('[clicker] Page text:', preview);
+      result.message = 'Not found. Page: ' + preview;
+      console.log('[clicker] ❌\n', preview);
     }
 
   } catch (err) {

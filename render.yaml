@@ -7,3 +7,5 @@ services:
     envVars:
       - key: CLICK_INTERVAL_MS
         value: "1000"
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/src/.cache/puppeteer
